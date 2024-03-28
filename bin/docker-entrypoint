@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+set -o errexit
+
+ROOT_DIR=/var/www/lecture
+STORAGE_DIR=/var/www/lecture/storage
+
+INTEGRATION_USER=www-data
+INTEGRATION_USER_GROUP=www-data
+
+SCRIPT_START_TIME=$SECONDS
+
+# Prints JSON log entry - unformatted 1-line JSON object with fields "level", "message", "app_name"
+# Usage:
+#   log info "MESSAGE"
+#   log error "MESSAGE"
+log() {
+  local LEVEL=$1
+  local MESSAGE=$2
+  local APP_NAME=integration-docker-entrypoint
+  local UPTIME=$(($SECONDS - $SCRIPT_START_TIME))
+  local CURRENT_CALLER_LINE
+  CURRENT_CALLER_LINE=$(caller | awk '{print $1;}')
+  local CALLER_LINE=${CALLER_LINE:-$CURRENT_CALLER_LINE}
+  jq --null-input --compact-output --monochrome-output \
+    --arg level "$LEVEL" \
+    --arg message "$MESSAGE" \
+    --arg app_name "$APP_NAME" \
+    --arg uptime "${UPTIME}s" \
+    --arg line "$CALLER_LINE" \
+    '{level: $level, message: $message, app_name: $app_name, uptime: $uptime, line: $line }'
+}
+
+# Fails with log message
+fail() {
+  local CALLER_LINE=$(caller | awk '{print $1;}')
+  log error "$@"
+  exit 1
+}
+
+# Enables local development support
+init_local_development() {
+  if [ ! -z "$USER_ID" ] && [ ! -z "$USER_NAME" ]; then
+    # Create debug user with sudoer privilegies
+    log info "adding user ${USER_NAME} with id ${USER_ID}"
+    useradd --shell /bin/bash -u $USER_ID -o -c "" -m $USER_NAME 2>/dev/null || true
+    echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
+
+    INTEGRATION_USER=$USER_NAME
+    INTEGRATION_USER_GROUP=$USER_NAME
+  fi
+}
+
+fix_root_dir_permisisons() {
+  log info "change integration directory owner to $INTEGRATION_USER:www-data"
+  local TIMEFORMAT="finished in %E seconds"
+  quick_chown_dir "$ROOT_DIR"
+}
+
+fix_storage_dir_permisisons() {
+  log info "change integration directory owner to www-data:www-data"
+  local TIMEFORMAT="finished in %E seconds"
+  force_quick_chown_dir "$STORAGE_DIR"
+}
+
+quick_chown_dir() {
+  local DIR=$1
+  local USER=$INTEGRATION_USER
+  local GROUP=$INTEGRATION_USER_GROUP
+  find "${DIR}" -not -user "$USER" -or -not -group "$GROUP" | xargs -d '\n' --no-run-if-empty chown "$USER:$GROUP"
+}
+
+force_quick_chown_dir() {
+  local DIR=$1
+  local USER=www-data
+  local GROUP=www-data
+  find "${DIR}" -not -user "$USER" -or -not -group "$GROUP" | xargs -d '\n' --no-run-if-empty chown "$USER:$GROUP"
+}
+
+exec_by_user() {
+  sudo -E "-u$INTEGRATION_USER" "-g$INTEGRATION_USER_GROUP" "$@" || fail "command $@ failed"
+}
+
+if [ "$APP_DEBUG" = "enabled" ]; then
+  init_local_development || fail
+fi
+fix_root_dir_permisisons || fail
+fix_storage_dir_permisisons || fail
+
+#exec_by_user php artisan optimize:clear
+#exec_by_user php artisan migrate --force
+#exec_by_user php artisan optimize
+
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

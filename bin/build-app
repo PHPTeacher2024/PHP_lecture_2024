@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -o errexit
+
+docker run -it --rm -v "$PWD":/var/www/html -u 1000 --name lecture-builder lecture-builder bash -c "docker/builder/build-app.sh"
+docker build -t lecture-app -f docker/app/Dockerfile .
