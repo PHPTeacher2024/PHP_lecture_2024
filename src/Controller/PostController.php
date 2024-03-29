@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../Model/Post.php';
 require_once __DIR__ . '/../Model/PostTable.php';
-require_once __DIR__ . '/../Model/ConnectionProvider.php';
+require_once __DIR__ . '/../Infrastructure/ConnectionProvider.php';
 
 class PostController
 {
