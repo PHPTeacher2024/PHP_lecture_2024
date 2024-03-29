@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/PostInterface.php';
 
-class Post extends \DateTimeImmutable implements PostInterface
+class Post implements PostInterface
 {
     private ?int $id;
     private string $title;

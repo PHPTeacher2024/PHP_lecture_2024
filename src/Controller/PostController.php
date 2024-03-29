@@ -7,6 +7,7 @@ require_once __DIR__ . '/../Model/ConnectionProvider.php';
 
 class PostController
 {
+    private PostTable $postTable;
     public function __construct()
     {
         $connection = ConnectionProvider::getConnection();
