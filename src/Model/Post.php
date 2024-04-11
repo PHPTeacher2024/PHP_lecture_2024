@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/PostInterface.php';
+namespace App\Model;
 
 class Post implements PostInterface
 {
@@ -9,9 +9,9 @@ class Post implements PostInterface
     private string $title;
     private string $subTitle;
     private string $content;
-    public ?DateTimeImmutable $postedAt;
+    public ?\DateTimeImmutable $postedAt;
 
-    public function __construct(?int $id, string $title, string $subTitle, string $content, ?DateTimeImmutable $postedAt)
+    public function __construct(?int $id, string $title, string $subTitle, string $content, ?\DateTimeImmutable $postedAt)
     {
         $this->id = $id;
         $this->title = $title;
@@ -40,7 +40,7 @@ class Post implements PostInterface
         return $this->content;
     }
 
-    public function getPostedAt(): ?DateTimeImmutable
+    public function getPostedAt(): ?\DateTimeImmutable
     {
         return $this->postedAt;
     }

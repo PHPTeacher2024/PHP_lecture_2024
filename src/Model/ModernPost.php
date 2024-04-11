@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/PostInterface.php';
+namespace App\Model;
 
 class ModernPost implements PostInterface
 {
-    public function __construct(private ?int $id, private string $title, private string $subTitle, private string $content, private ?DateTimeImmutable $postedAt)
+    public function __construct(private ?int $id, private string $title, private string $subTitle, private string $content, private ?\DateTimeImmutable $postedAt)
     {
     }
 
@@ -29,7 +29,7 @@ class ModernPost implements PostInterface
         return $this->content;
     }
 
-    public function getPostedAt(): ?DateTimeImmutable
+    public function getPostedAt(): ?\DateTimeImmutable
     {
         return $this->postedAt;
     }

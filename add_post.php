@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/src/Controller/PostController.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-$controller = new PostController();
+$controller = new \App\Controller\PostController();
 $controller->publishPost($_POST);

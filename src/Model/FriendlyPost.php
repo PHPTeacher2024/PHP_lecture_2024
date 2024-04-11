@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/Post.php';
+namespace App\Model;
 
 class FriendlyPost extends Post
 {
-    public function __construct(?int $id, string $title, string $subTitle, string $content, ?DateTimeImmutable $postedAt)
+    public function __construct(?int $id, string $title, string $subTitle, string $content, ?\DateTimeImmutable $postedAt)
     {
         parent::__construct($id, $title, $subTitle, $content, $postedAt);
     }
